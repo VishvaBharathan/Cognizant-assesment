@@ -1,0 +1,17 @@
+class Printer:
+    def display(self, message):
+        print(message)
+
+class FileWriter:
+    def write_to_file(self, message):
+        file = open("output.txt", "w")
+        file.write(message)
+        file.close()
+
+message = "Hello World"
+
+obj1 = Printer()
+obj2 = FileWriter()
+
+obj1.display(message)
+obj2.write_to_file(message)
