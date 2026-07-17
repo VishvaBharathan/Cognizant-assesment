@@ -1,0 +1,171 @@
+CREATE TABLE departments (
+    department_id SERIAL PRIMARY KEY,
+    dept_name VARCHAR(100) NOT NULL,
+    head_name VARCHAR(100),
+    budget DECIMAL(12,2)
+);
+
+CREATE TABLE students (
+    student_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    dob DATE,
+    admission_year INT,
+    department_id INT,
+    CONSTRAINT fk_student_dept
+        FOREIGN KEY (department_id)
+        REFERENCES departments(department_id)
+);
+
+CREATE TABLE courses (
+    course_id SERIAL PRIMARY KEY,
+    course_title VARCHAR(150) NOT NULL,
+    course_code VARCHAR(20) UNIQUE,
+    credits INT,
+    department_id INT,
+    CONSTRAINT fk_course_dept
+        FOREIGN KEY (department_id)
+        REFERENCES departments(department_id)
+);
+
+CREATE TABLE enrollments (
+    enrollment_id SERIAL PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    enrolled_on DATE,
+    grade CHAR(2),
+    CONSTRAINT fk_enroll_student
+        FOREIGN KEY (student_id)
+        REFERENCES students(student_id),
+    CONSTRAINT fk_enroll_course
+        FOREIGN KEY (course_id)
+        REFERENCES courses(course_id)
+);
+
+CREATE TABLE professors (
+    professor_id SERIAL PRIMARY KEY,
+    professor_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    salary DECIMAL(10,2),
+    department_id INT,
+    CONSTRAINT fk_prof_dept
+        FOREIGN KEY (department_id)
+        REFERENCES departments(department_id)
+);
+
+INSERT INTO departments (dept_name, head_name, budget) VALUES
+('Information Technology','Dr. Mahesh Rao',900000),
+('Electrical','Dr. Kavitha Menon',650000),
+('Mechanical','Dr. Vivek Sharma',580000),
+('Civil','Dr. Arvind Kumar',470000);
+
+INSERT INTO students (first_name,last_name,email,dob,admission_year,department_id) VALUES
+('Rahul','Kumar','rahul@college.edu','2003-02-15',2022,1),
+('Neha','Reddy','neha@college.edu','2003-06-11',2022,1),
+('Ajay','Singh','ajay@college.edu','2002-12-03',2021,2),
+('Pooja','Nair','pooja@college.edu','2004-01-18',2023,3),
+('Manoj','Patil','manoj@college.edu','2003-10-22',2022,1),
+('Anita','Das','anita@college.edu','2002-09-08',2021,2);
+
+INSERT INTO courses (course_title,course_code,credits,department_id) VALUES
+('Programming in Python','IT101',4,1),
+('SQL Fundamentals','IT102',3,1),
+('Operating Systems','IT103',4,1),
+('Digital Electronics','EE101',3,2),
+('Engineering Mechanics','ME101',3,3);
+
+INSERT INTO enrollments (student_id,course_id,enrolled_on,grade) VALUES
+(1,1,'2022-07-05','A'),
+(1,2,'2022-07-05','B'),
+(2,1,'2022-07-05','A'),
+(3,4,'2021-07-10','B'),
+(4,5,'2023-07-12',NULL),
+(5,2,'2022-07-05','A'),
+(6,4,'2021-07-10','C');
+
+INSERT INTO professors (professor_name,email,salary,department_id) VALUES
+('Dr. Ravi Kumar','ravi@college.edu',96000,1),
+('Dr. Nisha Paul','nisha@college.edu',90000,1),
+('Dr. Sanjay Roy','sanjay@college.edu',84000,2),
+('Dr. Rekha Iyer','rekha@college.edu',81000,3);
+
+SELECT COUNT(*) AS total_departments FROM departments;
+SELECT COUNT(*) AS total_students FROM students;
+SELECT COUNT(*) AS total_courses FROM courses;
+SELECT COUNT(*) AS total_enrollments FROM enrollments;
+SELECT COUNT(*) AS total_professors FROM professors;
+
+-- INNER JOIN
+SELECT
+    st.first_name,
+    st.last_name,
+    dp.dept_name
+FROM students st
+JOIN departments dp
+ON st.department_id = dp.department_id;
+
+-- Student with Course
+SELECT
+    st.first_name,
+    st.last_name,
+    cr.course_title
+FROM enrollments en
+JOIN students st
+ON en.student_id = st.student_id
+JOIN courses cr
+ON en.course_id = cr.course_id;
+
+-- Students without Enrollment
+SELECT
+    st.first_name,
+    st.last_name
+FROM students st
+LEFT JOIN enrollments en
+ON st.student_id = en.student_id
+WHERE en.student_id IS NULL;
+
+-- Course-wise Student Count
+SELECT
+    cr.course_title,
+    COUNT(en.student_id) AS enrolled_students
+FROM courses cr
+LEFT JOIN enrollments en
+ON cr.course_id = en.course_id
+GROUP BY cr.course_title;
+
+-- Department & Professors
+SELECT
+    dp.dept_name,
+    pr.professor_name,
+    pr.salary
+FROM departments dp
+LEFT JOIN professors pr
+ON dp.department_id = pr.department_id;
+
+ALTER TABLE students
+ADD COLUMN mobile_no VARCHAR(15);
+
+ALTER TABLE courses
+ADD COLUMN seat_limit INT DEFAULT 60;
+
+ALTER TABLE enrollments
+ADD CONSTRAINT grade_check
+CHECK (grade IN ('A','B','C','D','F') OR grade IS NULL);
+
+ALTER TABLE departments
+RENAME COLUMN head_name TO hod_name;
+
+ALTER TABLE students
+DROP COLUMN mobile_no;
+
+-- 1NF
+-- Each column contains only one value.
+
+-- 2NF
+-- Every non-key attribute depends on the complete primary key.
+
+-- 3NF
+-- No transitive dependency exists.
+-- Department details are maintained separately.
+-- Enrollment stores only student-course relationship.
