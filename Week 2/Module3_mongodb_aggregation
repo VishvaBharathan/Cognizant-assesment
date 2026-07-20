@@ -1,0 +1,26 @@
+db.students.aggregate([
+  {
+    $match: {
+      department: "Computer Science"
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      avgMarks: {
+        $avg: "$marks"
+      },
+      totalStudents: {
+        $sum: 1
+      }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      department: "Computer Science",
+      avgMarks: 1,
+      totalStudents: 1
+    }
+  }
+]);
