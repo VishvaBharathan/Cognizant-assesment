@@ -1,0 +1,56 @@
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+db_url = "postgresql+psycopg2://postgres:admin%40123@localhost:5432/college_db"
+
+engine = create_engine(db_url)
+Base = declarative_base()
+
+
+class StudentRecord(Base):
+    __tablename__ = "student_info"
+
+    student_id = Column(Integer, primary_key=True)
+    student_name = Column(String(100))
+    dept_name = Column(String(100))
+
+
+Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
+db = Session()
+
+# Insert Record
+new_student = StudentRecord(
+    student_name="Rahul",
+    dept_name="Computer Science"
+)
+db.add(new_student)
+db.commit()
+
+# Display Records
+print("Student Details")
+records = db.query(StudentRecord).all()
+
+for record in records:
+    print(record.student_id, record.student_name, record.dept_name)
+
+# Modify Record
+record = db.query(StudentRecord).filter(
+    StudentRecord.student_name == "Rahul"
+).first()
+
+if record:
+    record.dept_name = "Artificial Intelligence"
+    db.commit()
+
+# Remove Record
+record = db.query(StudentRecord).filter_by(
+    student_name="Rahul"
+).first()
+
+if record:
+    db.delete(record)
+    db.commit()
+
+print("CRUD operations executed successfully!")
